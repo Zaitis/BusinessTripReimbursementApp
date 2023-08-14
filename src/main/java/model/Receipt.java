@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class Receipt {
 
     private int id;
-    private String name;
+    private int userId;
+    private String type;
     private BigDecimal price;
 }

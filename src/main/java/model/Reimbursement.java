@@ -7,11 +7,12 @@ import java.util.List;
 public class Reimbursement {
 
     private int id;
-    private User user;
+    private String firstName;
+    private String lastName;
     private Date startDate;
     private Date endDate;
     private List<Receipt> receipts;
-    private BigDecimal total;
+    private BigDecimal distanceDriven;
 
 
 }
