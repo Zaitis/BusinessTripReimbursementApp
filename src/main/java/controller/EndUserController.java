@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 public class EndUserController implements HttpHandler{
 
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 

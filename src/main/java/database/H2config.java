@@ -11,14 +11,13 @@ import java.sql.SQLException;
 
 
 public class H2config {
-    public H2config() throws SQLException, FileNotFoundException {
-    Server.createWebServer("-trace").start();
-    Connection connection = DriverManager.getConnection(
-            "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa"
-    );
 
+    public H2config() throws SQLException, FileNotFoundException {
+        Server.createWebServer("-trace").start();
+        Connection connection = DriverManager.getConnection(
+                "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa"
+        );
         RunScript.execute(connection, new FileReader("src/main/resources/init.sql"));
- //   Statement statement = connection.createStatement();
         connection.close();
     }
 }
