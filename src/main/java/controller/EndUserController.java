@@ -1,5 +1,6 @@
 package controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -34,55 +35,35 @@ public class EndUserController implements HttpHandler {
         if ("POST".equals(method)) {
             if ("/enduser/createReimbursement".equals(path)) {
                 response = handleCreateReimbursement(exchange);
-//            } else if ("/enduser/editReimbursement".equals(path)) {
-//                response = handleEditReimbursement(exchange);
-//            } else if ("/enduser/addReceipts".equals(path)) {
-//              //  response = handleAddReceipts(exchange);
             }
         }
-
         sendResponse(exchange, 200, response);
     }
 
     private String handleCreateReimbursement(HttpExchange exchange) {
         try {
             InputStream requestBody = exchange.getRequestBody();
+            byte[] requestBodyBytes = requestBody.readAllBytes();
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
-            Reimbursement reimbursement = objectMapper.readValue(requestBody, Reimbursement.class);
+            Reimbursement reimbursement = objectMapper.readValue(requestBodyBytes, Reimbursement.class);
             reimbursementService.addReimbursement(reimbursement);
-            handleAddReceipts(exchange, reimbursement.getId());
-            return "Reimbursement was been created with ID: " + reimbursement.getId();
-        } catch (IOException e) {
-            return "It is something wrong. "+ e;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private String handleAddReceipts(HttpExchange exchange, int id) {
-
-        try {
-            int reimbursementId = Integer.parseInt(exchange.getRequestHeaders().getFirst("ReimbursementId"));
-            InputStream requestBody = exchange.getRequestBody();
-            ObjectMapper objectMapper = new ObjectMapper();
-            Receipt[] receipts = objectMapper.readValue(requestBody, Receipt[].class);
-            for (Receipt receipt:receipts
-                 ) {
-                receipt.setReimbursementId(id);
-                receiptService.addReceipt(receipt);
-
+            JsonNode rootNode = objectMapper.readTree(requestBodyBytes);
+            JsonNode receiptsNode = rootNode.get("receipts");
+            if (receiptsNode != null && receiptsNode.isArray()) {
+                for (JsonNode receiptNode : receiptsNode) {
+                    Receipt receipt = objectMapper.treeToValue(receiptNode, Receipt.class);
+                    receipt.setReimbursementId(reimbursement.getId());
+                    receiptService.addReceipt(receipt);
+                }
             }
-
-            return "Receipts has been add to Reimbursement ID: " + reimbursementId;
-        } catch (NumberFormatException | IOException e) {
-            return "Something is wrong.";
+            return "Reimbursement was created with ID: " + reimbursement.getId();
+        } catch (IOException e) {
+            return "An error occurred while processing the request: " + e.getMessage();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     private void sendResponse(HttpExchange exchange, int statusCode, String responseText) throws IOException {
         byte[] responseBytes = responseText.getBytes("UTF-8");
         exchange.sendResponseHeaders(statusCode, responseBytes.length);
