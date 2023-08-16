@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,24 +21,52 @@ import static java.sql.DriverManager.getConnection;
 
 public class ReimbursementRepository {
 
-        public void addReimbursement(Reimbursement reimbursement) throws SQLException {
-            String query = "INSERT INTO reimbursement VALUES (DEFAULT, ?, ?, ?, ?, ?)";
+//        public void addReimbursement(Reimbursement reimbursement) throws SQLException {
+//            String query = "INSERT INTO reimbursement VALUES (DEFAULT, ?, ?, ?, ?, ?)";
+//
+//            try (Connection connection = getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
+//                 PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+//
+//                preparedStatement.setString(1, reimbursement.getFirstName());
+//                preparedStatement.setString(2, reimbursement.getLastName());
+//                preparedStatement.setTimestamp(3, Timestamp.valueOf(reimbursement.getStartDate()));
+//                preparedStatement.setTimestamp(4, Timestamp.valueOf(reimbursement.getEndDate()));
+//                preparedStatement.setBigDecimal(5, reimbursement.getDistanceDriven());
+//
+//                preparedStatement.executeUpdate(); // Wykonaj zapytanie
+//
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
-            try (Connection connection = getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
-                 PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+    public Reimbursement addReimbursement(Reimbursement reimbursement) throws SQLException {
+        String query = "INSERT INTO reimbursement VALUES (DEFAULT, ?, ?, ?, ?, ?)";
 
-                preparedStatement.setString(1, reimbursement.getFirstName());
-                preparedStatement.setString(2, reimbursement.getLastName());
-                preparedStatement.setTimestamp(3, Timestamp.valueOf(reimbursement.getStartDate()));
-                preparedStatement.setTimestamp(4, Timestamp.valueOf(reimbursement.getEndDate()));
-                preparedStatement.setBigDecimal(5, reimbursement.getDistanceDriven());
+        try (Connection connection = getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
+             PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-                preparedStatement.executeUpdate(); // Wykonaj zapytanie
+            preparedStatement.setString(1, reimbursement.getFirstName());
+            preparedStatement.setString(2, reimbursement.getLastName());
+            preparedStatement.setTimestamp(3, Timestamp.valueOf(reimbursement.getStartDate()));
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(reimbursement.getEndDate()));
+            preparedStatement.setBigDecimal(5, reimbursement.getDistanceDriven());
 
-            } catch (SQLException e) {
-                e.printStackTrace();
+            preparedStatement.executeUpdate();
+
+            try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    reimbursement.setId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("An error occurred while created reimbursement.");
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return reimbursement;
+    }
+
     public Optional<Reimbursement> getReimbursement(int id) throws Exception {
         ResultSet resultSet = null;
         try (Connection connection = getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
@@ -105,7 +134,14 @@ public class ReimbursementRepository {
         LocalDateTime endDate = resultSet.getTimestamp("END_DATE").toLocalDateTime();
         BigDecimal distanceDriven = resultSet.getBigDecimal("DISTANCE_DRIVEN");
 
-        return new Reimbursement(firstName, lastName, startDate, endDate, getReceiptsForReimbursement(id), distanceDriven);
+        return new Reimbursement.Builder()
+                .id(id)
+                .firstName(firstName)
+                .lastName(lastName)
+                .startDate(startDate)
+                .endDate(endDate)
+                .receipts(getReceiptsForReimbursement(id))
+                .distanceDriven(distanceDriven).build();
     }
 
 }

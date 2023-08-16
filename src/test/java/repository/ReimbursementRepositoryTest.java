@@ -18,7 +18,13 @@ class ReimbursementRepositoryTest {
     @Test
     void shouldAddReimbursementToDB() throws SQLException {
         ReimbursementRepository reimbursementRepository = new ReimbursementRepository();
-        Reimbursement reimbursement = new Reimbursement("Cyprian", "Norwid", LocalDateTime.now(), LocalDateTime.now(), BigDecimal.valueOf(200));
+        Reimbursement reimbursement = new Reimbursement.Builder()
+                .firstName("Cyprian")
+                .lastName("Norwid")
+                .startDate(LocalDateTime.now())
+                .endDate(LocalDateTime.now())
+                .distanceDriven(BigDecimal.valueOf(200))
+                .build();
         reimbursementRepository.addReimbursement(reimbursement);
         assertEquals(0, reimbursement.getId());
     }

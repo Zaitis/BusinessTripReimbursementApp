@@ -11,8 +11,8 @@ public class ReimbursementService {
     private ReimbursementRepository reimbursementRepository = new ReimbursementRepository();
     private ReimbursementCalculator reimbursementCalculator;
 
-    public void addReimbursement(Reimbursement reimbursement) throws SQLException {
-        reimbursementRepository.addReimbursement(reimbursement);
+    public Reimbursement addReimbursement(Reimbursement reimbursement) throws SQLException {
+       return reimbursementRepository.addReimbursement(reimbursement);
     }
 
     public Reimbursement getReimbursement(int id) throws Exception {

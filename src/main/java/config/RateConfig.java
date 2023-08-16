@@ -11,4 +11,12 @@ public class RateConfig {
     public BigDecimal getCarMileageAmount() { return carMileageAmount;}
 
     public RateConfig(){}
+
+    public void setDailyAllowanceAmount(BigDecimal dailyAllowanceAmount) {
+        this.dailyAllowanceAmount = dailyAllowanceAmount;
+    }
+
+    public void setCarMileageAmount(BigDecimal carMileageAmount) {
+        this.carMileageAmount = carMileageAmount;
+    }
 }

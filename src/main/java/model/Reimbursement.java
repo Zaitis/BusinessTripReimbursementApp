@@ -1,7 +1,7 @@
 package model;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Reimbursement {
@@ -13,31 +13,25 @@ public class Reimbursement {
     private List<Receipt> receipts;
     private BigDecimal distanceDriven;
 
-
-    public Reimbursement(String firstName, String lastName, LocalDateTime startDate, LocalDateTime endDate, BigDecimal distanceDriven) {
-
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.distanceDriven = distanceDriven;
+    private Reimbursement(Builder builder) {
+        this.id = builder.id;
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
+        this.startDate = builder.startDate;
+        this.endDate = builder.endDate;
+        this.receipts = builder.receipts;
+        this.distanceDriven = builder.distanceDriven;
     }
 
-    public Reimbursement(String firstName, String lastName, LocalDateTime startDate, LocalDateTime endDate, List<Receipt> receipts, BigDecimal distanceDriven) {
-
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.receipts = receipts;
-        this.distanceDriven = distanceDriven;
-    }
+    public Reimbursement(){}
 
     public void setId(int id) {
         this.id = id;
     }
 
-    public void setFirstName(String firstName) {this.firstName = firstName;}
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
@@ -87,16 +81,65 @@ public class Reimbursement {
         return distanceDriven;
     }
 
-    @Override
-    public String toString() {
-        return "Reimbursement{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", receipts=" + receipts.toString() +
-                ", distanceDriven=" + distanceDriven +
-                '}';
+    public void addReceipt(Receipt receipt) {
+        if (receipts == null) {
+            receipts = new ArrayList<>();
+        }
+        receipts.add(receipt);
+    }
+
+    public static class Builder {
+        private int id;
+        private String firstName;
+        private String lastName;
+        private LocalDateTime startDate;
+        private LocalDateTime endDate;
+        private List<Receipt> receipts = new ArrayList<>();
+        private BigDecimal distanceDriven;
+
+
+
+        public Builder() {}
+
+        public Builder id(int id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder firstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public Builder lastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public Builder startDate(LocalDateTime startDate) {
+            this.startDate = startDate;
+            return this;
+        }
+
+        public Builder endDate(LocalDateTime endDate) {
+            this.endDate = endDate;
+            return this;
+        }
+
+
+
+        public Builder distanceDriven(BigDecimal distanceDriven) {
+            this.distanceDriven = distanceDriven;
+            return this;
+        }
+
+        public Builder receipts(List<Receipt> receipts) {
+            this.receipts = receipts;
+            return this;
+        }
+
+        public Reimbursement build() {
+            return new Reimbursement(this);
+        }
     }
 }
