@@ -1,8 +1,8 @@
 # Compiled class file
-*.class
-.idea
+Backend/*.class
+/.idea
 # Log file
-*.log
+Backend/*.log
 
 # BlueJ files
 *.ctxt
@@ -10,7 +10,7 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-/target
+Backend/target
 
 # Package Files #
 *.jar
@@ -24,3 +24,28 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+Frontend/node_modules
+Frontend/.pnp
+Frontend/.pnp.js
+
+# testing
+Frontend/coverage
+Frontend/README.md
+# production
+Frontend/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
