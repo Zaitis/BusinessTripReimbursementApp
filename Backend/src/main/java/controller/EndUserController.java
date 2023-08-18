@@ -11,6 +11,8 @@ import model.Receipt;
 import model.Reimbursement;
 import service.ReceiptService;
 import service.ReimbursementService;
+import service.dto.ReimbursementDto;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -77,12 +79,12 @@ public class EndUserController implements HttpHandler {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
-            List<Reimbursement> reimbursements = reimbursementService.getAllReimbursements();
+            List<ReimbursementDto> reimbursementsDto = reimbursementService.getAllReimbursementsWithTotal();
             List<JsonNode> reimbursementNodes = new ArrayList<>();
 
-            for (Reimbursement reimbursement : reimbursements) {
-                JsonNode receiptsNode = objectMapper.valueToTree(reimbursement.getReceipts());
-                JsonNode reimbursementNode = objectMapper.valueToTree(reimbursement);
+            for (ReimbursementDto reimbursementDto : reimbursementsDto) {
+                JsonNode receiptsNode = objectMapper.valueToTree(reimbursementDto.getReceipts());
+                JsonNode reimbursementNode = objectMapper.valueToTree(reimbursementDto);
                 ((ObjectNode) reimbursementNode).replace("receipts", receiptsNode);
                 reimbursementNodes.add(reimbursementNode);
             }

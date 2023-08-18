@@ -34,7 +34,7 @@ class ReimbursementCalculatorTest {
         list.add(receipt3);
         ReimbursementCalculator reimbursementCalculator = new ReimbursementCalculator();
         //then
-        BigDecimal result = reimbursementCalculator.calculateTotalReimbursement(days, distance, list, new RateConfig());
+        BigDecimal result = reimbursementCalculator.calculateTotalReimbursement(days, distance, list, RateConfig.getInstance());
 
         //when
         assertEquals(BigDecimal.valueOf(361.60).setScale(2, RoundingMode.CEILING), result);

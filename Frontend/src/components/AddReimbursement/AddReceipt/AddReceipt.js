@@ -6,10 +6,14 @@ function AddReceipt({ onAddReceipt }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newReceipt = { type, price: parseFloat(price) };
-    onAddReceipt(newReceipt);
-    setType('');
-    setPrice('');
+    if (validator.isFloat(price, { min: 0 })) {
+      const newReceipt = { type, price: parseFloat(price) };
+      onAddReceipt(newReceipt);
+      setType('');
+      setPrice('');
+    } else {
+      alert('Invalid price. Please enter a valid positive number.');
+    }
   };
 
   return (

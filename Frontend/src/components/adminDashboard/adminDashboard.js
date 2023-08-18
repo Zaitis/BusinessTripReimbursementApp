@@ -25,10 +25,6 @@ function AdminDashboard() {
   }, []);
 
 
-  const calculateTotal = (receipts) => {
-    return receipts.reduce((total, receipt) => total + receipt.price, 0);
-  };
-
   return (
     <div className="admin-dashboard"> 
       <h2>Admin Dashboard</h2>
@@ -62,7 +58,7 @@ function AdminDashboard() {
                 </ul>
               </td>
               <td>{reimbursement.distanceDriven}</td>
-              <td>${calculateTotal(reimbursement.receipts).toFixed(2)}</td>
+              <td>{reimbursement.total.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>

@@ -1,3 +1,4 @@
+
 import com.sun.net.httpserver.HttpServer;
 import config.AdminConfig;
 import config.RateConfig;
@@ -24,8 +25,8 @@ public class Main {
                 return;
             }
             AdminController adminController = new AdminController(
-                    new AdminAuthenticator(new AdminConfig()),
-                    new RateConfig()
+                    new AdminAuthenticator(new AdminConfig()), RateConfig.getInstance()
+
             );
 
             String path = exchange.getRequestURI().getPath();

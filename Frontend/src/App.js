@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Używamy Routes
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; 
 import Home from './components/Home/Home';
 import AddReimbursement from './components/AddReimbursement/AddReimbursement';
 import AdminLogin from './components/AdminLogin/AdminLogin';
