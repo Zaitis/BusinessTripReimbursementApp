@@ -1,19 +1,24 @@
 package controller;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.net.httpserver.HttpExchange;
+import config.RateConfig;
+import controller.dto.RateUpdateData;
+import model.Type;
+import util.AdminAuthenticator;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import config.RateConfig;
-import controller.dto.RateUpdateData;
-import util.AdminAuthenticator;
+import java.math.BigDecimal;
+import java.util.EnumMap;
+import java.util.Map;
 
 
-public class AdminController implements HttpHandler {
+public class AdminController {
     private AdminAuthenticator adminAuthenticator;
     private RateConfig rateConfig;
 
@@ -21,10 +26,6 @@ public class AdminController implements HttpHandler {
         this.adminAuthenticator = adminAuthenticator;
         this.rateConfig = rateConfig;
     }
-
-
-
-
 
     public String handleLogin(HttpExchange exchange) throws IOException {
         try {
@@ -49,22 +50,55 @@ public class AdminController implements HttpHandler {
         return null;
     }
 
+    public String handleGetRates() {
+        try {
+            RateConfig rateConfig = RateConfig.getInstance();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectNode responseNode = objectMapper.createObjectNode();
+
+            responseNode.put("dailyAllowanceAmount", rateConfig.getDailyAllowanceAmount());
+            responseNode.put("carMileageAmount", rateConfig.getCarMileageAmount());
+            responseNode.put("carMileageLimit", rateConfig.getCarMileageLimit());
+
+            ObjectNode receiptLimitsNode = objectMapper.createObjectNode();
+            EnumMap<Type, BigDecimal> receiptLimits = rateConfig.getReceiptTypeLimits();
+            for (Map.Entry<Type, BigDecimal> entry : receiptLimits.entrySet()) {
+                receiptLimitsNode.put(entry.getKey().toString(), entry.getValue());
+            }
+            responseNode.set("receiptLimits", receiptLimitsNode);
+            return responseNode.toString();
+        } catch (Exception e) {
+            return "An error occurred while processing the request.";
+        }
+    }
 
     public String handleUpdateRates(HttpExchange exchange) {
-        System.out.println("tu jesteśmy");
         try {
             InputStream requestBody = exchange.getRequestBody();
             ObjectMapper objectMapper = new ObjectMapper();
             RateUpdateData rateUpdateData = objectMapper.readValue(requestBody, RateUpdateData.class);
+
+            RateConfig rateConfig = RateConfig.getInstance();
+
             rateConfig.setDailyAllowanceAmount(rateUpdateData.getNewDailyAllowanceAmount());
             rateConfig.setCarMileageAmount(rateUpdateData.getNewCarMileageAmount());
+            rateConfig.setCarMileageLimit(rateUpdateData.getNewCarMileageLimit());
 
+            EnumMap<Type, BigDecimal> receiptLimits = rateUpdateData.getReceiptLimits();
+            for (Map.Entry<Type, BigDecimal> entry : receiptLimits.entrySet()) {
+                rateConfig.setLimitForType(entry.getKey(), entry.getValue());
+            }
 
-            return"Daily Allowance: " + rateConfig.getDailyAllowanceAmount() + " Car Millage: " + rateConfig.getCarMileageAmount();
+            return "Daily Allowance: " + rateConfig.getDailyAllowanceAmount() +
+                    " Car Mileage: " + rateConfig.getCarMileageAmount() +
+                    " Car Mileage Limit: " + rateConfig.getCarMileageLimit() +
+                    " Receipt Limits: " + rateConfig.getReceiptTypeLimits();
         } catch (IOException e) {
-            return "It is something wrong.";
+            return "An error occurred while processing the request.";
         }
     }
+
     public void sendResponse(HttpExchange exchange, int statusCode, String responseText) throws IOException {
         byte[] responseBytes = responseText.getBytes("UTF-8");
         exchange.sendResponseHeaders(statusCode, responseBytes.length);
@@ -74,23 +108,4 @@ public class AdminController implements HttpHandler {
             writer.flush();
         }
     }
-
-
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String response = "";
-
-        if ("POST".equals(method)) {
-            String path = exchange.getRequestURI().getPath();
-            if ("/admin/login".equals(path)) {
-                response = handleLogin(exchange);
-            } else if ("/admin/updateRates".equals(path)) {
-                response = handleUpdateRates(exchange);
-            }
-        }
-
-        sendResponse(exchange, 200, response);
-    }
-
 }

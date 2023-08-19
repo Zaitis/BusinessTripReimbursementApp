@@ -3,6 +3,7 @@ package repository;
 import database.H2config;
 import model.Receipt;
 import model.Reimbursement;
+import model.Type;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -96,7 +97,7 @@ public class ReimbursementRepository {
     private Receipt createReceipt(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("ID");
         int reimbursementId = resultSet.getInt("REIMBURSEMENT_ID");
-        String type = resultSet.getString("TYPE");
+        Type type = Type.valueOf(resultSet.getString("TYPE"));
         BigDecimal price = resultSet.getBigDecimal("PRICE");
 
         Receipt receipt = new Receipt();

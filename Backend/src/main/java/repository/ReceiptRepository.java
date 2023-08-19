@@ -14,7 +14,7 @@ public class ReceiptRepository {
             try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
                  PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, receipt.getReimbursementId());
-                preparedStatement.setString(2, receipt.getType());
+                preparedStatement.setString(2, String.valueOf(receipt.getType()));
                 preparedStatement.setBigDecimal(3, receipt.getPrice());
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {

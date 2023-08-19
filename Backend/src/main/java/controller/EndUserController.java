@@ -2,7 +2,6 @@ package controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sun.net.httpserver.HttpExchange;
@@ -18,14 +17,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
 public class EndUserController implements HttpHandler {
 
-    private ReimbursementService reimbursementService = new ReimbursementService();
-    private ReceiptService receiptService = new ReceiptService();
+    private final ReimbursementService reimbursementService = new ReimbursementService();
+    private final ReceiptService receiptService = new ReceiptService();
 
 
     public EndUserController() {
@@ -75,6 +73,7 @@ public class EndUserController implements HttpHandler {
             throw new RuntimeException(e);
         }
     }
+
     public String handleDisplayReimbursements() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();

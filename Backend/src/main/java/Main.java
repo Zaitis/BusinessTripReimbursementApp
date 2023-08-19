@@ -36,6 +36,8 @@ public class Main {
                 response = adminController.handleLogin(exchange);
             } else if ("/admin/updateRates".equals(path)) {
                 response = adminController.handleUpdateRates(exchange);
+            }else if ("/admin/getRates".equals(path)) {
+                response = adminController.handleGetRates();
             }
 
             adminController.sendResponse(exchange, 200, response);

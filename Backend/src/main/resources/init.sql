@@ -16,5 +16,5 @@ CREATE TABLE receipt (
 );
 INSERT INTO reimbursement (first_name, last_name, start_date, end_date, distance_driven)
 VALUES ('Andy', 'Anderson', '2022-11-10', '2022-11-15', 215);
-INSERT INTO receipt (reimbursement_id, type, price) VALUES (1, 'ticket', 13.95);
-INSERT INTO receipt (reimbursement_id, type, price) VALUES (1, 'ticket', 13.95);
+INSERT INTO receipt (reimbursement_id, type, price) VALUES (1, 'TICKET', 13.95);
+INSERT INTO receipt (reimbursement_id, type, price) VALUES (1, 'TICKET', 13.95);

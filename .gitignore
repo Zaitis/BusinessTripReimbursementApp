@@ -1,5 +1,8 @@
 # Compiled class file
 Backend/*.class
+Backend/Dockerfile
+Frontend/Dockerfile
+docker-compose.yml
 /.idea
 # Log file
 Backend/*.log
