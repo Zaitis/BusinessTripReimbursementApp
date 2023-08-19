@@ -20,37 +20,42 @@ public class ReimbursementService {
        return reimbursementRepository.addReimbursement(reimbursement);
     }
 
-    public Reimbursement getReimbursement(int id) throws Exception {
-       return reimbursementRepository.getReimbursement(id).orElseThrow();
-    }
-
-
     public List<ReimbursementDto> getAllReimbursementsWithTotal() throws SQLException {
         int days=0;
         List<ReimbursementDto> lists = new ArrayList<>();
         List<Reimbursement> reimbursements= reimbursementRepository.getReimbursements();
 
-        for (Reimbursement reimbursement: reimbursements
-             ) {
+        for (Reimbursement reimbursement: reimbursements) {
+
             days = reimbursementCalculator.calculateDaysDifference(reimbursement.getStartDate(), reimbursement.getEndDate());
 
             BigDecimal total = reimbursementCalculator.calculateTotalReimbursement(
                     days,
                     reimbursement.getDistanceDriven(),
-                    reimbursement.getReceipts(), RateConfig.getInstance()
+                    reimbursement.getReceipts(),
+                    RateConfig.getInstance()
             );
-            ReimbursementDto reimbursementDto = new ReimbursementDto.Builder()
-                    .id(reimbursement.getId())
-                    .firstName(reimbursement.getFirstName())
-                    .lastName(reimbursement.getLastName())
-                    .startDate(reimbursement.getStartDate())
-                    .endDate(reimbursement.getEndDate())
-                    .distanceDriven(reimbursement.getDistanceDriven())
-                    .receipts(reimbursement.getReceipts())
-                    .total(total)
-                    .build();
+            ReimbursementDto reimbursementDto = getReimbursementDto(reimbursement, total);
             lists.add(reimbursementDto);
         }
         return lists;
+    }
+
+    private static ReimbursementDto getReimbursementDto(Reimbursement reimbursement, BigDecimal total) {
+        ReimbursementDto reimbursementDto = new ReimbursementDto.Builder()
+                .id(reimbursement.getId())
+                .firstName(reimbursement.getFirstName())
+                .lastName(reimbursement.getLastName())
+                .startDate(reimbursement.getStartDate())
+                .endDate(reimbursement.getEndDate())
+                .distanceDriven(reimbursement.getDistanceDriven())
+                .receipts(reimbursement.getReceipts())
+                .total(total)
+                .build();
+        return reimbursementDto;
+    }
+
+    public Reimbursement getReimbursement(int id) throws Exception {
+        return reimbursementRepository.getReimbursement(id).orElseThrow();
     }
 }

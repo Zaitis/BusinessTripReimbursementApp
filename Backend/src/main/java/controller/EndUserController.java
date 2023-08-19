@@ -86,7 +86,7 @@ public class EndUserController implements HttpHandler {
                         sendResponse(exchange, 401, responseMessage);
                     }
                     if(!receiptValidator.isWithinLimits(RateConfig.getInstance(),receipt)) {
-                        String responseMessage = "Price for ticket is too much.";
+                        String responseMessage = "Price for receipt is too much.";
                         sendResponse(exchange, 401, responseMessage);
                     }
 

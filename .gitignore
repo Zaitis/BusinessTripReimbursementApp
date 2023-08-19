@@ -1,11 +1,9 @@
 # Compiled class file
 Backend/*.class
-Backend/Dockerfile
-Frontend/Dockerfile
-docker-compose.yml
-/.idea
+Backend/*.log/.idea
 # Log file
 Backend/*.log
+Backend/.idea/*
 
 # BlueJ files
 *.ctxt
