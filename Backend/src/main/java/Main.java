@@ -62,6 +62,8 @@ public class Main {
                 response = endUserController.handleCreateReimbursement(exchange);
             }else if ("/enduser/displayReimbursements".equals(path)) {
                 response = endUserController.handleDisplayReimbursements();
+            }else if ("/enduser/getTypes".equals(path)) {
+                response = endUserController.handleAllTypes();
             }
 
             endUserController.sendResponse(exchange, 200, response);

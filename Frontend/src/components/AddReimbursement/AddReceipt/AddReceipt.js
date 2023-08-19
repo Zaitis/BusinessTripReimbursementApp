@@ -1,8 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import validator from 'validator';
 
 function AddReceipt({ onAddReceipt }) {
   const [type, setType] = useState('');
   const [price, setPrice] = useState('');
+  const [types, setTypes] = useState([]);
+
+  useEffect(() => {
+    fetchTypes();
+  }, []);
+
+  const fetchTypes = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/enduser/getTypes');
+      if (response.ok) {
+        const typesData = await response.json();
+        setTypes(typesData);
+      } else {
+        console.error('Error fetching types:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred:', error);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,7 +42,14 @@ function AddReceipt({ onAddReceipt }) {
       <form onSubmit={handleSubmit}>
         <div>
           <label>Type:</label>
-          <input type="text" value={type} onChange={(e) => setType(e.target.value)} />
+          <select value={type} onChange={(e) => setType(e.target.value)}>
+            <option value="">Select Type</option>
+            {types.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label>Price:</label>
