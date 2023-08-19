@@ -53,7 +53,7 @@ class ReimbursementCalculatorTest {
 
 
     @Test
-    void shouldCaculateDaysWhenDatesIsNull() {
+    void shouldCalculateDaysWhenDatesIsNull() {
         assertEquals(0, (new ReimbursementCalculator()).calculateDaysDifference(null, null));
         assertEquals(0, (new ReimbursementCalculator()).calculateDaysDifference(LocalDateTime.of(2023, 1, 1, 1, 1), null));
         assertEquals(0, (new ReimbursementCalculator()).calculateDaysDifference(null, LocalDateTime.of(2023, 1, 1, 1, 1)));
