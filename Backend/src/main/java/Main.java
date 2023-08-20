@@ -5,6 +5,7 @@ import config.RateConfig;
 import controller.AdminController;
 import controller.EndUserController;
 import database.H2config;
+import service.AdminService;
 import util.AdminAuthenticator;
 
 import java.net.InetSocketAddress;
@@ -19,15 +20,13 @@ public class Main {
             exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
             exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
             exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Credentials", "true");
 
             if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
                 exchange.sendResponseHeaders(204, -1);
                 return;
             }
-            AdminController adminController = new AdminController(
-                    new AdminAuthenticator(new AdminConfig()), RateConfig.getInstance()
-
-            );
+            AdminController adminController = new AdminController();
 
             String path = exchange.getRequestURI().getPath();
             String response = "";
@@ -39,7 +38,6 @@ public class Main {
             }else if ("/admin/getRates".equals(path)) {
                 response = adminController.handleGetRates();
             }
-
             adminController.sendResponse(exchange, 200, response);
         });
 

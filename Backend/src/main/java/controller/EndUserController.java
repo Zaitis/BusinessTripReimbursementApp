@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class EndUserController implements HttpHandler {
+public class EndUserController  {
 
     private final ReimbursementService reimbursementService = new ReimbursementService();
     private final ReceiptService receiptService = new ReceiptService();
@@ -35,32 +35,7 @@ public class EndUserController implements HttpHandler {
     private final ReimbursementValidator reimbursementValidator = new ReimbursementValidator();
 
 
-    public EndUserController() {
-    }
-
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
-        String response = "";
-
-        if ("POST".equals(method)) {
-            if ("/enduser/createReimbursement".equals(path)) {
-                response = handleCreateReimbursement(exchange);
-            }
-        } else if ("GET".equals(method)) {
-            if ("/enduser/displayReimbursements".equals(path)) {
-                response = handleDisplayReimbursements();
-            }
-        } else if ("GET".equals(method)) {
-            if ("/enduser/getTypes".equals(path)) {
-                response = handleDisplayReimbursements();
-            }
-        }
-        sendResponse(exchange, 200, response);
-    }
-
-
+    public EndUserController() {}
 
     public String handleCreateReimbursement(HttpExchange exchange) {
 
@@ -79,17 +54,16 @@ public class EndUserController implements HttpHandler {
                     Receipt receipt = objectMapper.treeToValue(receiptNode, Receipt.class);
                     if(!reimbursementValidator.isValidDate(reimbursement)){
                         String responseMessage =  "Start day is greater than end day.";
-                        sendResponse(exchange, 401, responseMessage);
+                        sendResponse(exchange, 400, responseMessage);
                     }
                     if(!receiptValidator.isValidAmount(receipt)){
                         String responseMessage =  "Invalid Amount.";
-                        sendResponse(exchange, 401, responseMessage);
+                        sendResponse(exchange, 400, responseMessage);
                     }
                     if(!receiptValidator.isWithinLimits(RateConfig.getInstance(),receipt)) {
                         String responseMessage = "Price for receipt is too much.";
-                        sendResponse(exchange, 401, responseMessage);
+                        sendResponse(exchange, 400, responseMessage);
                     }
-
                     receipt.setReimbursementId(reimbursement.getId());
                     receiptService.addReceipt(receipt);
                 }
@@ -136,7 +110,6 @@ public class EndUserController implements HttpHandler {
         try {
             return objectMapper.writeValueAsString(allTypes);
         } catch (Exception e) {
-            // Handle the exception appropriately
             return "An error occurred while processing the request.";
         }
     }
@@ -144,11 +117,8 @@ public class EndUserController implements HttpHandler {
     public void sendResponse(HttpExchange exchange, int statusCode, String responseText) throws IOException {
         byte[] responseBytes = responseText.getBytes("UTF-8");
         exchange.sendResponseHeaders(statusCode, responseBytes.length);
-        OutputStream outputStream = exchange.getResponseBody();
-        try {
+        try (OutputStream outputStream = exchange.getResponseBody()) {
             outputStream.write(responseBytes);
-        } finally {
-            outputStream.close();
         }
     }
 }

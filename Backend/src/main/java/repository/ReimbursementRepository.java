@@ -1,13 +1,10 @@
 package repository;
 
-import database.H2config;
 import model.Receipt;
 import model.Reimbursement;
-import model.Type;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,7 +20,7 @@ import static java.sql.DriverManager.getConnection;
 public class ReimbursementRepository {
     ReceiptRepository receiptRepository = new ReceiptRepository();
 
-    public Reimbursement addReimbursement(Reimbursement reimbursement) throws SQLException {
+    public Reimbursement addReimbursement(Reimbursement reimbursement) {
         String query = "INSERT INTO reimbursement VALUES (DEFAULT, ?, ?, ?, ?, ?)";
 
         try (Connection connection = getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
@@ -58,7 +55,13 @@ public class ReimbursementRepository {
             statement.setInt(1, id);
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return Optional.of(createReimbursement(resultSet));
+                return Optional.of(buildReimbursement(
+                        resultSet.getInt("ID"),
+                        resultSet.getString("FIRST_NAME"),
+                        resultSet.getString("LAST_NAME"),
+                        resultSet.getTimestamp("START_DATE").toLocalDateTime(),
+                        resultSet.getTimestamp("END_DATE").toLocalDateTime(),
+                        resultSet.getBigDecimal("DISTANCE_DRIVEN")));
             } else {
                 return Optional.empty();
             }
@@ -71,63 +74,7 @@ public class ReimbursementRepository {
         }
     }
 
-    public List<Receipt> getReceiptsForReimbursement(int reimbursementId) throws Exception {
-        List<Receipt> receipts = new ArrayList<>();
-        ResultSet resultSet = null;
-
-        try (Connection connection = getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM receipt WHERE REIMBURSEMENT_ID = ?")) {
-            statement.setInt(1, reimbursementId);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                Receipt receipt =createReceipt(resultSet);
-                receipts.add(receipt);
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException("An error occurred while fetching receipts.", ex);
-        } finally {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-        }
-        return receipts;
-    }
-
-    private Receipt createReceipt(ResultSet resultSet) throws SQLException {
-        int id = resultSet.getInt("ID");
-        int reimbursementId = resultSet.getInt("REIMBURSEMENT_ID");
-        Type type = Type.valueOf(resultSet.getString("TYPE"));
-        BigDecimal price = resultSet.getBigDecimal("PRICE");
-
-        Receipt receipt = new Receipt();
-        receipt.setId(id);
-        receipt.setReimbursementId(reimbursementId);
-        receipt.setType(type);
-        receipt.setPrice(price);
-
-        return receipt;
-    }
-
-    private Reimbursement createReimbursement(ResultSet resultSet) throws Exception {
-        int id = resultSet.getInt("ID");
-        String firstName = resultSet.getString("FIRST_NAME");
-        String lastName = resultSet.getString("LAST_NAME");
-        LocalDateTime startDate = resultSet.getTimestamp("START_DATE").toLocalDateTime();
-        LocalDateTime endDate = resultSet.getTimestamp("END_DATE").toLocalDateTime();
-        BigDecimal distanceDriven = resultSet.getBigDecimal("DISTANCE_DRIVEN");
-
-        return new Reimbursement.Builder()
-                .id(id)
-                .firstName(firstName)
-                .lastName(lastName)
-                .startDate(startDate)
-                .endDate(endDate)
-                .receipts(getReceiptsForReimbursement(id))
-                .distanceDriven(distanceDriven).build();
-    }
-
-    public List<Reimbursement> getReimbursements() throws SQLException {
+    public List<Reimbursement> getReimbursements() {
         List<Reimbursement> reimbursements = new ArrayList<>();
         String query = "SELECT * FROM reimbursement";
 
@@ -142,14 +89,7 @@ public class ReimbursementRepository {
                 LocalDateTime startDate = resultSet.getTimestamp("START_DATE").toLocalDateTime();
                 LocalDateTime endDate = resultSet.getTimestamp("END_DATE").toLocalDateTime();
                 BigDecimal distanceDriven = resultSet.getBigDecimal("DISTANCE_DRIVEN");
-                Reimbursement reimbursement =new Reimbursement.Builder()
-                        .id(id)
-                        .firstName(firstName)
-                        .lastName(lastName)
-                        .startDate(startDate)
-                        .endDate(endDate)
-                        .receipts(getReceiptsForReimbursement(id))
-                        .distanceDriven(distanceDriven).build();
+                Reimbursement reimbursement = buildReimbursement(id, firstName, lastName, startDate, endDate, distanceDriven);
                 reimbursements.add(reimbursement);
             }
         } catch (Exception e) {
@@ -157,5 +97,40 @@ public class ReimbursementRepository {
         }
 
         return reimbursements;
+    }
+
+
+    public List<Receipt> getReceiptsForReimbursement(int reimbursementId) throws Exception {
+        List<Receipt> receipts = new ArrayList<>();
+        ResultSet resultSet = null;
+
+        try (Connection connection = getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM receipt WHERE REIMBURSEMENT_ID = ?")) {
+            statement.setInt(1, reimbursementId);
+            resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                Receipt receipt = receiptRepository.createReceipt(resultSet);
+                receipts.add(receipt);
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("An error occurred while fetching receipts.", ex);
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+        return receipts;
+    }
+
+    private Reimbursement buildReimbursement(int id, String firstName, String lastName, LocalDateTime startDate, LocalDateTime endDate, BigDecimal distanceDriven) throws Exception {
+        return new Reimbursement.Builder()
+                .id(id)
+                .firstName(firstName)
+                .lastName(lastName)
+                .startDate(startDate)
+                .endDate(endDate)
+                .receipts(getReceiptsForReimbursement(id))
+                .distanceDriven(distanceDriven).build();
     }
 }

@@ -7,7 +7,8 @@ import com.sun.net.httpserver.HttpExchange;
 import config.RateConfig;
 import controller.dto.RateUpdateData;
 import model.Type;
-import util.AdminAuthenticator;
+import service.AdminService;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,36 +20,37 @@ import java.util.Map;
 
 
 public class AdminController {
-    private AdminAuthenticator adminAuthenticator;
-    private RateConfig rateConfig;
+    private final AdminService adminService = new AdminService();
+    private final RateConfig rateConfig = RateConfig.getInstance();
 
-    public AdminController(AdminAuthenticator adminAuthenticator, RateConfig rateConfig) {
-        this.adminAuthenticator = adminAuthenticator;
-        this.rateConfig = rateConfig;
-    }
+    public AdminController() {}
 
     public String handleLogin(HttpExchange exchange) throws IOException {
+
+        String responseMessage="";
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode requestBody = objectMapper.readTree(exchange.getRequestBody());
-
             String username = requestBody.get("username").asText();
             String password = requestBody.get("password").asText();
-            String responseMessage = "";
 
-            if (adminAuthenticator.authenticate(username, password)) {
+            if (adminService.checkAuthenticate(username, password)) {
+                System.out.println("1");
                 responseMessage = "You are logged in as administrator.";
                 sendResponse(exchange, 200, responseMessage);
             } else {
                 responseMessage = "Authentication failed.";
+                System.out.println("2");
                 sendResponse(exchange, 401, responseMessage);
             }
+
         } catch (IOException e) {
             String errorMessage = "An error occurred while processing the request: " + e.getMessage();
             sendResponse(exchange, 500, errorMessage);
         }
-        return null;
+        return responseMessage;
     }
+
 
     public String handleGetRates() {
         try {
@@ -56,7 +58,6 @@ public class AdminController {
 
             ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode responseNode = objectMapper.createObjectNode();
-
             responseNode.put("dailyAllowanceAmount", rateConfig.getDailyAllowanceAmount());
             responseNode.put("carMileageAmount", rateConfig.getCarMileageAmount());
             responseNode.put("carMileageLimit", rateConfig.getCarMileageLimit());
@@ -65,6 +66,7 @@ public class AdminController {
             EnumMap<Type, BigDecimal> receiptLimits = rateConfig.getReceiptTypeLimits();
             for (Map.Entry<Type, BigDecimal> entry : receiptLimits.entrySet()) {
                 receiptLimitsNode.put(entry.getKey().toString(), entry.getValue());
+
             }
             responseNode.set("receiptLimits", receiptLimitsNode);
             return responseNode.toString();
@@ -78,17 +80,9 @@ public class AdminController {
             InputStream requestBody = exchange.getRequestBody();
             ObjectMapper objectMapper = new ObjectMapper();
             RateUpdateData rateUpdateData = objectMapper.readValue(requestBody, RateUpdateData.class);
-
-            RateConfig rateConfig = RateConfig.getInstance();
-
-            rateConfig.setDailyAllowanceAmount(rateUpdateData.getNewDailyAllowanceAmount());
-            rateConfig.setCarMileageAmount(rateUpdateData.getNewCarMileageAmount());
-            rateConfig.setCarMileageLimit(rateUpdateData.getNewCarMileageLimit());
-
             EnumMap<Type, BigDecimal> receiptLimits = rateUpdateData.getReceiptLimits();
-            for (Map.Entry<Type, BigDecimal> entry : receiptLimits.entrySet()) {
-                rateConfig.setLimitForType(entry.getKey(), entry.getValue());
-            }
+
+            settingRates(rateUpdateData, receiptLimits);
 
             return "Daily Allowance: " + rateConfig.getDailyAllowanceAmount() +
                     " Car Mileage: " + rateConfig.getCarMileageAmount() +
@@ -99,13 +93,20 @@ public class AdminController {
         }
     }
 
+    private void settingRates(RateUpdateData rateUpdateData, EnumMap<Type, BigDecimal> receiptLimits) {
+        rateConfig.setDailyAllowanceAmount(rateUpdateData.getNewDailyAllowanceAmount());
+        rateConfig.setCarMileageAmount(rateUpdateData.getNewCarMileageAmount());
+        rateConfig.setCarMileageLimit(rateUpdateData.getNewCarMileageLimit());
+        for (Map.Entry<Type, BigDecimal> entry : receiptLimits.entrySet()) {
+            rateConfig.setLimitForType(entry.getKey(), entry.getValue());
+        }
+    }
+
     public void sendResponse(HttpExchange exchange, int statusCode, String responseText) throws IOException {
         byte[] responseBytes = responseText.getBytes("UTF-8");
         exchange.sendResponseHeaders(statusCode, responseBytes.length);
-        OutputStream outputStream = exchange.getResponseBody();
-        try (PrintWriter writer = new PrintWriter(outputStream)) {
-            writer.write(responseText);
-            writer.flush();
+        try (OutputStream outputStream = exchange.getResponseBody()) {
+            outputStream.write(responseBytes);
         }
     }
 }
