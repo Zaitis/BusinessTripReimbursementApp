@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './AddReimbursement.css'; 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom';
 
 function AddReimbursement() {
   const [firstName, setFirstName] = useState('');
@@ -192,6 +193,7 @@ function AddReimbursement() {
           </div>
         </div>
         <button type="submit" className="action-button">Submit</button>
+        <Link className="back" to="..">Back</Link>
       </form>
     </div>
   );

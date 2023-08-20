@@ -8,7 +8,7 @@
   }
   
   .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
   
   .form-group label {
@@ -19,7 +19,7 @@
   
   .form-group input {
     width: 100%;
-    padding: 10px;
+    padding: 5px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -42,7 +42,7 @@
     cursor: pointer;
   }
   
-  .form-buttons a {
+  .back-link {
     padding: 10px 20px;
     font-size: 16px;
     background-color: #ccc;

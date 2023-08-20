@@ -26,8 +26,12 @@ function AdminDashboard() {
 
 
   return (
+    
     <div className="admin-dashboard"> 
-      <h2>Admin Dashboard</h2>
+    <h1 className='h1'>Admin Dashboard</h1>
+    <Link className="logout" to="..">Logout</Link>
+      
+     
       <Link to="/changeRates" className="change-rates-link">Change Rates</Link> 
       <table className="reimbursements-table">
         <thead>

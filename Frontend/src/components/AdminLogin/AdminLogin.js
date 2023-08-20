@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './AdminLogin.css';
+import { Link } from 'react-router-dom';
 
 function AdminLogin() {
   const [username, setUsername] = useState('');
@@ -65,6 +66,7 @@ function AdminLogin() {
           />
         </div>
         <button type="submit">Login</button>
+        <Link className="back" to="..">Back</Link>
       </form>
       <ToastContainer />
     </div>
