@@ -26,7 +26,7 @@ Follow these steps to run the application using Docker:
 
 
    ```sh
-   git clone https://github.com/your-username/BusinessTripReimbursementApp.git
+   git clone https://github.com/Zaitis/BusinessTripReimbursementApp.git
    cd BusinessTripReimbursementApp
    ```
 
