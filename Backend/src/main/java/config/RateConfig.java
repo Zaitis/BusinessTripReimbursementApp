@@ -3,18 +3,26 @@ package config;
 import model.Type;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Map;
 
 public class RateConfig {
-    private static RateConfig instance;
+    private static volatile RateConfig instance;
+
     private BigDecimal dailyAllowanceAmount;
     private BigDecimal carMileageAmount;
     private BigDecimal carMileageLimit;
-    private EnumMap<Type, BigDecimal> receiptTypeLimits = new EnumMap<>(Type.class);
+
+    private final EnumMap<Type, BigDecimal> receiptTypeLimits = new EnumMap<>(Type.class);
 
     public static RateConfig getInstance() {
         if (instance == null) {
-            instance = new RateConfig();
+            synchronized (RateConfig.class) {
+                if (instance == null) {
+                    instance = new RateConfig();
+                }
+            }
         }
         return instance;
     }
@@ -24,16 +32,16 @@ public class RateConfig {
     }
 
     private void initializeDefaultLimits() {
-        dailyAllowanceAmount = new BigDecimal(15);
-        carMileageAmount = new BigDecimal(0.3);
-        carMileageLimit= new BigDecimal(100000);
-        receiptTypeLimits.put(Type.TAXI, new BigDecimal("50.00"));
-        receiptTypeLimits.put(Type.HOTEL, new BigDecimal("200.00"));
-        receiptTypeLimits.put(Type.PLANE_TICKET, new BigDecimal("500.00"));
-        receiptTypeLimits.put(Type.TRAIN, new BigDecimal("75.00"));
-        receiptTypeLimits.put(Type.FOOD, new BigDecimal("100.00"));
-        receiptTypeLimits.put(Type.RELAX, new BigDecimal("100.00"));
-        receiptTypeLimits.put(Type.TICKET, new BigDecimal("50.00"));
+        dailyAllowanceAmount = BigDecimal.valueOf(15);
+        carMileageAmount = BigDecimal.valueOf(0.3);
+        carMileageLimit = BigDecimal.valueOf(100000);
+        receiptTypeLimits.put(Type.TAXI, BigDecimal.valueOf(50.00));
+        receiptTypeLimits.put(Type.HOTEL, BigDecimal.valueOf(200.00));
+        receiptTypeLimits.put(Type.PLANE_TICKET, BigDecimal.valueOf(500.00));
+        receiptTypeLimits.put(Type.TRAIN, BigDecimal.valueOf(75.00));
+        receiptTypeLimits.put(Type.FOOD, BigDecimal.valueOf(100.00));
+        receiptTypeLimits.put(Type.RELAX, BigDecimal.valueOf(100.00));
+        receiptTypeLimits.put(Type.TICKET, BigDecimal.valueOf(50.00));
     }
 
     public BigDecimal getCarMileageLimit() {
@@ -44,8 +52,8 @@ public class RateConfig {
         this.carMileageLimit = carMileageLimit;
     }
 
-    public EnumMap<Type, BigDecimal> getReceiptTypeLimits() {
-        return receiptTypeLimits;
+    public Map<Type, BigDecimal> getReceiptTypeLimits() {
+        return Collections.unmodifiableMap(receiptTypeLimits);
     }
 
     public BigDecimal getLimitForType(Type type) {
@@ -74,17 +82,17 @@ public class RateConfig {
 
     @Override
     public String toString() {
-        return "RateConfig{" +
-                "dailyAllowanceAmount=" + dailyAllowanceAmount +
-                ", carMileageAmount=" + carMileageAmount +
-                ", carMileageLimit=" + carMileageLimit +
-                ", receiptTypeLimits=" + receiptTypeLimits.get(Type.TAXI) +
-                ", receiptTypeLimits=" + receiptTypeLimits.get(Type.HOTEL) +
-                ", receiptTypeLimits=" + receiptTypeLimits.get(Type.PLANE_TICKET) +
-                ", receiptTypeLimits=" + receiptTypeLimits.get(Type.TRAIN) +
-                ", receiptTypeLimits=" + receiptTypeLimits.get(Type.FOOD) +
-                ", receiptTypeLimits=" + receiptTypeLimits.get(Type.RELAX) +
-                ", receiptTypeLimits=" + receiptTypeLimits.get(Type.TICKET) +
-                '}';
+        StringBuilder builder = new StringBuilder();
+        builder.append("RateConfig{");
+        builder.append("dailyAllowanceAmount=").append(dailyAllowanceAmount);
+        builder.append(", carMileageAmount=").append(carMileageAmount);
+        builder.append(", carMileageLimit=").append(carMileageLimit);
+
+        for (Map.Entry<Type, BigDecimal> entry : receiptTypeLimits.entrySet()) {
+            builder.append(", receiptTypeLimits(").append(entry.getKey()).append(")=").append(entry.getValue());
+        }
+
+        builder.append('}');
+        return builder.toString();
     }
 }

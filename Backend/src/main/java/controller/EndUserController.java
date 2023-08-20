@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import config.RateConfig;
 import model.Receipt;
 import model.Reimbursement;
 import model.Type;
+import repository.ReimbursementRepository;
 import service.ReceiptService;
 import service.ReimbursementService;
 import service.dto.ReimbursementDto;
@@ -20,22 +20,21 @@ import util.ReimbursementValidator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-
-public class EndUserController  {
-
-    private final ReimbursementService reimbursementService = new ReimbursementService();
+public class EndUserController {
+    private final ReimbursementService reimbursementService = new ReimbursementService(new ReimbursementRepository(), new ReimbursementCalculator(), RateConfig.getInstance());
     private final ReceiptService receiptService = new ReceiptService();
     private final ReceiptValidator receiptValidator = new ReceiptValidator();
     private final ReimbursementCalculator reimbursementCalculator = new ReimbursementCalculator();
     private final ReimbursementValidator reimbursementValidator = new ReimbursementValidator();
+    private final ObjectMapper objectMapper;
 
-
-    public EndUserController() {}
+    public EndUserController() {
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+    }
 
     public String handleCreateReimbursement(HttpExchange exchange) {
 
@@ -52,15 +51,15 @@ public class EndUserController  {
             if (receiptsNode != null && receiptsNode.isArray()) {
                 for (JsonNode receiptNode : receiptsNode) {
                     Receipt receipt = objectMapper.treeToValue(receiptNode, Receipt.class);
-                    if(!reimbursementValidator.isValidDate(reimbursement)){
-                        String responseMessage =  "Start day is greater than end day.";
+                    if (!reimbursementValidator.isValidDate(reimbursement)) {
+                        String responseMessage = "Start day is greater than end day.";
                         sendResponse(exchange, 400, responseMessage);
                     }
-                    if(!receiptValidator.isValidAmount(receipt)){
-                        String responseMessage =  "Invalid Amount.";
+                    if (!receiptValidator.isValidAmount(receipt)) {
+                        String responseMessage = "Invalid Amount.";
                         sendResponse(exchange, 400, responseMessage);
                     }
-                    if(!receiptValidator.isWithinLimits(RateConfig.getInstance(),receipt)) {
+                    if (!receiptValidator.isWithinLimits(RateConfig.getInstance(), receipt)) {
                         String responseMessage = "Price for receipt is too much.";
                         sendResponse(exchange, 400, responseMessage);
                     }
@@ -69,46 +68,36 @@ public class EndUserController  {
                 }
             }
             return String.valueOf(reimbursementCalculator.calculateTotalReimbursement(reimbursementCalculator.calculateDaysDifference(
-                    reimbursement.getStartDate(), reimbursement.getEndDate()),
+                            reimbursement.getStartDate(), reimbursement.getEndDate()),
                     reimbursement.getDistanceDriven(),
                     reimbursement.getReceipts(),
                     RateConfig.getInstance()));
         } catch (IOException e) {
             return "An error occurred while processing the request: " + e.getMessage();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
 
-    public String handleDisplayReimbursements() {
+    public String handleDisplayReimbursements(HttpExchange exchange) throws IOException {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.registerModule(new JavaTimeModule());
             List<ReimbursementDto> reimbursementsDto = reimbursementService.getAllReimbursementsWithTotal();
             List<JsonNode> reimbursementNodes = new ArrayList<>();
-
             for (ReimbursementDto reimbursementDto : reimbursementsDto) {
                 JsonNode receiptsNode = objectMapper.valueToTree(reimbursementDto.getReceipts());
                 JsonNode reimbursementNode = objectMapper.valueToTree(reimbursementDto);
                 ((ObjectNode) reimbursementNode).replace("receipts", receiptsNode);
                 reimbursementNodes.add(reimbursementNode);
             }
-
             return objectMapper.writeValueAsString(reimbursementNodes);
         } catch (IOException e) {
-            return "An error occurred while processing the request: " + e.getMessage();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            sendResponse(exchange, 400, "Invalid request data: " + e.getMessage());
         }
+        return null;
     }
 
     public String handleAllTypes() {
-        List<Type> allTypes = Arrays.asList(Type.values());
-        ObjectMapper objectMapper = new ObjectMapper();
-
         try {
-            return objectMapper.writeValueAsString(allTypes);
+            return objectMapper.writeValueAsString(Type.values());
         } catch (Exception e) {
             return "An error occurred while processing the request.";
         }

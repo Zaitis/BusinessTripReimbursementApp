@@ -4,17 +4,30 @@ import model.Receipt;
 import repository.ReceiptRepository;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 public class ReceiptService {
 
-    private ReceiptRepository receiptRepository = new ReceiptRepository();
+    private final ReceiptRepository receiptRepository;
 
-    public void addReceipt(Receipt receipt) throws SQLException {
-        receiptRepository.addReceipt(receipt);
+    public ReceiptService(ReceiptRepository receiptRepository) {
+        this.receiptRepository = receiptRepository;
+    }
+
+    public void addReceipt(Receipt receipt) {
+        try {
+            receiptRepository.addReceipt(receipt);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error adding receipt.", e);
+        }
     }
 
     public List<Receipt> getReceiptsByReimbursementId(int id) {
-        return null;
+        return Collections.emptyList();
+    }
+
+    public ReceiptService() {
+        this.receiptRepository = new ReceiptRepository();
     }
 }

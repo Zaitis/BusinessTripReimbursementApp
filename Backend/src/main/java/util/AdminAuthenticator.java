@@ -1,19 +1,19 @@
 package util;
 
-
 import config.AdminConfig;
 
 public class AdminAuthenticator {
-    private AdminConfig adminConfig;
+
+    private final AdminConfig adminConfig;
 
     public AdminAuthenticator(AdminConfig adminConfig) {
         this.adminConfig = adminConfig;
     }
 
-    public boolean authenticate(String name, String password) {
-        String expectedName = adminConfig.getName();
-        String expectedPassword = adminConfig.getPassword();
+    public boolean authenticate(String username, String password) {
+        String configuredUsername = adminConfig.getName();
+        String configuredPassword = adminConfig.getPassword();
 
-        return expectedName.equals(name) && expectedPassword.equals(password);
+        return configuredUsername.equals(username) && configuredPassword.equals(password);
     }
 }

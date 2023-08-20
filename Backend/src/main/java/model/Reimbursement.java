@@ -23,7 +23,9 @@ public class Reimbursement {
         this.distanceDriven = builder.distanceDriven;
     }
 
-    public Reimbursement(){}
+    public Reimbursement(){
+        this.receipts = new ArrayList<>();
+    }
 
     public void setId(int id) {
         this.id = id;
@@ -82,9 +84,6 @@ public class Reimbursement {
     }
 
     public void addReceipt(Receipt receipt) {
-        if (receipts == null) {
-            receipts = new ArrayList<>();
-        }
         receipts.add(receipt);
     }
 

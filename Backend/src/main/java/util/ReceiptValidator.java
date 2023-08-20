@@ -5,19 +5,48 @@ import model.Receipt;
 
 import java.math.BigDecimal;
 
+/**
+ * Utility class responsible for validating receipt details.
+ */
 public class ReceiptValidator {
 
-    public ReceiptValidator(){
+    /**
+     * Constructs a ReceiptValidator.
+     */
+    public ReceiptValidator() {
     }
 
-    public boolean isValidAmount(Receipt receipt) {
-        return receipt.getPrice() != null && receipt.getPrice().compareTo(BigDecimal.ZERO) >= 0;
+    /**
+     * Validates if the amount in the receipt is valid.
+     *
+     * @param receipt the receipt to be validated.
+     * @return true if the amount is non-null and non-negative, false otherwise.
+     */
+    public boolean isValidAmount(final Receipt receipt) {
+        if (receipt == null || receipt.getPrice() == null) {
+            return false;
+        }
+        return receipt.getPrice().compareTo(BigDecimal.ZERO) >= 0;
     }
 
-    public boolean isWithinLimits(RateConfig rateConfig, Receipt receipt) {
+    /**
+     * Validates if the receipt is within the predefined limits of the rate configuration.
+     *
+     * @param rateConfig the configuration containing receipt type limits.
+     * @param receipt the receipt to be validated.
+     * @return true if the receipt is within limits, false otherwise.
+     */
+    public boolean isWithinLimits(final RateConfig rateConfig, final Receipt receipt) {
+        if (rateConfig == null || receipt == null) {
+            return false;
+        }
+
+        BigDecimal receiptPrice = receipt.getPrice();
+        BigDecimal receiptTypeLimit = rateConfig.getReceiptTypeLimits().get(receipt.getType());
+
         return rateConfig.getReceiptTypeLimits().containsKey(receipt.getType()) &&
-                receipt.getPrice() != null && isValidAmount(receipt) &&
-                receipt.getPrice().compareTo(rateConfig.getReceiptTypeLimits().get(receipt.getType())) <= 0;
+                isValidAmount(receipt) &&
+                receiptPrice != null &&
+                (receiptTypeLimit != null && receiptPrice.compareTo(receiptTypeLimit) <= 0);
     }
 }
-

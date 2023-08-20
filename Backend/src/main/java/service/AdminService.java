@@ -7,9 +7,17 @@ import java.io.IOException;
 
 public class AdminService {
 
-    private AdminAuthenticator adminAuthenticator = new AdminAuthenticator(new AdminConfig());
+    private final AdminAuthenticator adminAuthenticator;
 
-    public boolean checkAuthenticate(String username, String password) throws IOException {
+    public AdminService(AdminAuthenticator adminAuthenticator) {
+        this.adminAuthenticator = adminAuthenticator;
+    }
+
+    public boolean checkAuthenticate(String username, String password) {
         return adminAuthenticator.authenticate(username, password);
+    }
+
+    public AdminService() {
+        this.adminAuthenticator = new AdminAuthenticator(new AdminConfig());
     }
 }

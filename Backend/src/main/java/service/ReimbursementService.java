@@ -13,36 +13,49 @@ import java.util.List;
 
 public class ReimbursementService {
 
-    private ReimbursementRepository reimbursementRepository = new ReimbursementRepository();
-    private ReimbursementCalculator reimbursementCalculator = new ReimbursementCalculator();
+    private final ReimbursementRepository reimbursementRepository;
+    private final ReimbursementCalculator reimbursementCalculator;
+    private final RateConfig rateConfig;
 
-    public Reimbursement addReimbursement(Reimbursement reimbursement) throws SQLException {
-       return reimbursementRepository.addReimbursement(reimbursement);
+    public ReimbursementService(
+            ReimbursementRepository reimbursementRepository,
+            ReimbursementCalculator reimbursementCalculator,
+            RateConfig rateConfig) {
+        this.reimbursementRepository = reimbursementRepository;
+        this.reimbursementCalculator = reimbursementCalculator;
+        this.rateConfig = rateConfig;
     }
 
-    public List<ReimbursementDto> getAllReimbursementsWithTotal() throws SQLException {
-        int days;
+    public Reimbursement addReimbursement(Reimbursement reimbursement) {
+        return reimbursementRepository.addReimbursement(reimbursement);
+    }
+
+    public List<ReimbursementDto> getAllReimbursementsWithTotal() {
         List<ReimbursementDto> lists = new ArrayList<>();
-        List<Reimbursement> reimbursements= reimbursementRepository.getReimbursements();
+        try {
+            List<Reimbursement> reimbursements= reimbursementRepository.getReimbursements();
+            for (Reimbursement reimbursement: reimbursements) {
+                int days = reimbursementCalculator.calculateDaysDifference(
+                        reimbursement.getStartDate(),
+                        reimbursement.getEndDate());
 
-        for (Reimbursement reimbursement: reimbursements) {
+                BigDecimal total = reimbursementCalculator.calculateTotalReimbursement(
+                        days,
+                        reimbursement.getDistanceDriven(),
+                        reimbursement.getReceipts(),
+                        rateConfig
+                );
 
-            days = reimbursementCalculator.calculateDaysDifference(reimbursement.getStartDate(), reimbursement.getEndDate());
-
-            BigDecimal total = reimbursementCalculator.calculateTotalReimbursement(
-                    days,
-                    reimbursement.getDistanceDriven(),
-                    reimbursement.getReceipts(),
-                    RateConfig.getInstance()
-            );
-            ReimbursementDto reimbursementDto = getReimbursementDto(reimbursement, total);
-            lists.add(reimbursementDto);
+                lists.add(getReimbursementDto(reimbursement, total));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching reimbursements with total.", e);
         }
         return lists;
     }
 
     private static ReimbursementDto getReimbursementDto(Reimbursement reimbursement, BigDecimal total) {
-        ReimbursementDto reimbursementDto = new ReimbursementDto.Builder()
+        return new ReimbursementDto.Builder()
                 .id(reimbursement.getId())
                 .firstName(reimbursement.getFirstName())
                 .lastName(reimbursement.getLastName())
@@ -52,10 +65,15 @@ public class ReimbursementService {
                 .receipts(reimbursement.getReceipts())
                 .total(total)
                 .build();
-        return reimbursementDto;
     }
 
-    public Reimbursement getReimbursement(int id) throws Exception {
-        return reimbursementRepository.getReimbursement(id).orElseThrow();
+    public Reimbursement getReimbursement(int id) {
+        try {
+            return reimbursementRepository.getReimbursement(id).orElseThrow(
+                    () -> new RuntimeException("Reimbursement not found with ID: " + id)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching reimbursement.", e);
+        }
     }
 }

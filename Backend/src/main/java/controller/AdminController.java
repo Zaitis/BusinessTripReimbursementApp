@@ -9,27 +9,22 @@ import controller.dto.RateUpdateData;
 import model.Type;
 import service.AdminService;
 
-
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 
-
 public class AdminController {
     private final AdminService adminService = new AdminService();
     private final RateConfig rateConfig = RateConfig.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AdminController() {}
 
-    public String handleLogin(HttpExchange exchange) throws IOException {
-
-        String responseMessage="";
+    public void handleLogin(HttpExchange exchange) throws IOException {
+        String responseMessage;
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             JsonNode requestBody = objectMapper.readTree(exchange.getRequestBody());
             String username = requestBody.get("username").asText();
             String password = requestBody.get("password").asText();
@@ -41,53 +36,44 @@ public class AdminController {
                 responseMessage = "Authentication failed.";
                 sendResponse(exchange, 401, responseMessage);
             }
-
         } catch (IOException e) {
-            String errorMessage = "An error occurred while processing the request: " + e.getMessage();
-            sendResponse(exchange, 500, errorMessage);
+            sendResponse(exchange, 500, "An error occurred while processing the request: " + e.getMessage());
         }
-        return responseMessage;
     }
 
-
-    public String handleGetRates() {
+    public void handleGetRates(HttpExchange exchange) throws IOException {
         try {
-            RateConfig rateConfig = RateConfig.getInstance();
-
-            ObjectMapper objectMapper = new ObjectMapper();
             ObjectNode responseNode = objectMapper.createObjectNode();
             responseNode.put("dailyAllowanceAmount", rateConfig.getDailyAllowanceAmount());
             responseNode.put("carMileageAmount", rateConfig.getCarMileageAmount());
             responseNode.put("carMileageLimit", rateConfig.getCarMileageLimit());
 
             ObjectNode receiptLimitsNode = objectMapper.createObjectNode();
-            EnumMap<Type, BigDecimal> receiptLimits = rateConfig.getReceiptTypeLimits();
+            Map<Type, BigDecimal> receiptLimits = rateConfig.getReceiptTypeLimits();
             for (Map.Entry<Type, BigDecimal> entry : receiptLimits.entrySet()) {
                 receiptLimitsNode.put(entry.getKey().toString(), entry.getValue());
-
             }
             responseNode.set("receiptLimits", receiptLimitsNode);
-            return responseNode.toString();
+
+            sendResponse(exchange, 200, responseNode.toString());
         } catch (Exception e) {
-            return "An error occurred while processing the request.";
+            sendResponse(exchange, 500, "An error occurred while processing the request.");
         }
     }
 
-    public String handleUpdateRates(HttpExchange exchange) {
+    public void handleUpdateRates(HttpExchange exchange) throws IOException {
         try {
-            InputStream requestBody = exchange.getRequestBody();
-            ObjectMapper objectMapper = new ObjectMapper();
-            RateUpdateData rateUpdateData = objectMapper.readValue(requestBody, RateUpdateData.class);
+            RateUpdateData rateUpdateData = objectMapper.readValue(exchange.getRequestBody(), RateUpdateData.class);
             EnumMap<Type, BigDecimal> receiptLimits = rateUpdateData.getReceiptLimits();
 
             settingRates(rateUpdateData, receiptLimits);
 
-            return "Daily Allowance: " + rateConfig.getDailyAllowanceAmount() +
+            sendResponse(exchange, 200, "Daily Allowance: " + rateConfig.getDailyAllowanceAmount() +
                     " Car Mileage: " + rateConfig.getCarMileageAmount() +
                     " Car Mileage Limit: " + rateConfig.getCarMileageLimit() +
-                    " Receipt Limits: " + rateConfig.getReceiptTypeLimits();
+                    " Receipt Limits: " + rateConfig.getReceiptTypeLimits());
         } catch (IOException e) {
-            return "An error occurred while processing the request.";
+            sendResponse(exchange, 500, "An error occurred while processing the request.");
         }
     }
 
