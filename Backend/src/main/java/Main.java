@@ -69,9 +69,5 @@ public class Main {
 
         server.setExecutor(null);
         server.start();
-
-        EndUserController endUserController = new EndUserController();
-        System.out.println(endUserController.handleDisplayReimbursements());
-
     }
 }

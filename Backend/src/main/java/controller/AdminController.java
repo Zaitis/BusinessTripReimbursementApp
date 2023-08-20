@@ -35,12 +35,10 @@ public class AdminController {
             String password = requestBody.get("password").asText();
 
             if (adminService.checkAuthenticate(username, password)) {
-                System.out.println("1");
                 responseMessage = "You are logged in as administrator.";
                 sendResponse(exchange, 200, responseMessage);
             } else {
                 responseMessage = "Authentication failed.";
-                System.out.println("2");
                 sendResponse(exchange, 401, responseMessage);
             }
 

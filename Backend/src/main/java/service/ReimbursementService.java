@@ -21,7 +21,7 @@ public class ReimbursementService {
     }
 
     public List<ReimbursementDto> getAllReimbursementsWithTotal() throws SQLException {
-        int days=0;
+        int days;
         List<ReimbursementDto> lists = new ArrayList<>();
         List<Reimbursement> reimbursements= reimbursementRepository.getReimbursements();
 
