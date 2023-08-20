@@ -1,5 +1,6 @@
 
 
+
 # Business Trip Reimbursement App
 
 
@@ -59,6 +60,17 @@ Visit [http://localhost:3000](http://localhost:3000) to explore the application'
 
 -   Username: admin
 -   Password: password
+
+## Screenshots
+
+![Zrzut ekranu](ss/ss1.png)
+![Zrzut ekranu](ss/ss2.png)
+![Zrzut ekranu](ss/ss3.png)
+![Zrzut ekranu](ss/ss4.png)
+![Zrzut ekranu](ss/ss5.png)
+![Zrzut ekranu](ss/ss6.png)
+
+ 
 
 ## Contributing
 
