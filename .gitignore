@@ -4,7 +4,7 @@ Backend/*.log/.idea
 # Log file
 Backend/*.log
 Backend/.idea/*
-
+.idea
 # BlueJ files
 *.ctxt
 
