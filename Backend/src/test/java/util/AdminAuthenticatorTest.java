@@ -2,6 +2,7 @@ package util;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import config.AdminConfig;
 import org.junit.jupiter.api.Disabled;
@@ -11,7 +12,7 @@ class AdminAuthenticatorTest {
 
     @Test
     void shouldCheckAuthenticate() {
-        AdminAuthenticator adminAuthenticator = new AdminAuthenticator(new AdminConfig());
+        AdminAuthenticator adminAuthenticator =new AdminAuthenticator((new AdminConfig()));
         assertFalse(adminAuthenticator.authenticate("Name", "iloveyou"));
         assertFalse(adminAuthenticator.authenticate("Admin", "password"));
         assertFalse(adminAuthenticator.authenticate("admin", "Password"));

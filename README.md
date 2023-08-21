@@ -39,6 +39,11 @@ Follow these steps to run the application using Docker:
   
  4.  Access the backend at: [http://localhost:8000](http://localhost:8000)
     
+ 5. Run tests:
+  ```sh
+   cd /Backend
+   mvn test
+   ```
 
 ## Docker Configuration
 

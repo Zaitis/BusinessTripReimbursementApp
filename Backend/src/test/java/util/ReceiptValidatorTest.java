@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import config.RateConfig;
 import model.Receipt;
 import model.Type;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ReceiptValidatorTest {

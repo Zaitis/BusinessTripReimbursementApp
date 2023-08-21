@@ -1,7 +1,9 @@
 package repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
+import database.H2config;
 import model.Reimbursement;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -13,11 +15,9 @@ import java.util.Date;
 
 class ReimbursementRepositoryTest {
 
-
-
     @Test
     void shouldAddReimbursementToDB() throws SQLException {
-        ReimbursementRepository reimbursementRepository = new ReimbursementRepository();
+        ReimbursementRepository reimbursementRepository = mock(ReimbursementRepository.class);
         Reimbursement reimbursement = new Reimbursement.Builder()
                 .firstName("Cyprian")
                 .lastName("Norwid")
